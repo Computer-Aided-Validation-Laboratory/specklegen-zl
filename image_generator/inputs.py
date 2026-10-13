@@ -1,27 +1,30 @@
 """Configure and generate a speckle image."""
 
+from gen_pattern import SpeckleImage
 
-from gen_pattern import speckle_image
+#First we want to define the parameters used in generating the speckle pattern:
 
-image_width = 1000
+image_width = 100
 
-image_height = 1000
+image_height = 100
 
 speckle_radius = 5 #pixels
 
-bw_balance = 0.4
+bw_balance = 0.5
 
-
-
-params = speckle_image(image_width, image_height, speckle_radius, bw_balance)
+params = SpeckleImage(image_width, image_height, speckle_radius, bw_balance)
 
 
 params.calculate_speckle_position()
 
-params.speckle_pattern()
+params.randomise_speckles()
 
-params.image()
+params.generate_speckle_pattern()
+
+params.smooth_edges()
 
 
+params.show_image()
 
 
+#params.save_image("speckle_pattern.png")
