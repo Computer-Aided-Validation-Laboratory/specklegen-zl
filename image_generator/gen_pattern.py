@@ -1,8 +1,8 @@
-from ast import Pass
-
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.fft import fft, fft2, fftshift
 from scipy.ndimage import zoom
+from scipy.signal import find_peaks, peak_widths
 
 
 class SpeckleImage:
@@ -43,7 +43,6 @@ class SpeckleImage:
     def randomise_speckles(self):
         """
         Randomises the positions of the speckles.
-
         """
         self.speckle_pos[:,0] += np.random.uniform(-self.x_step, self.x_step, size=self.speckle_pos.shape[0])
         self.speckle_pos[:,1] += np.random.uniform(-self.y_step, self.y_step, size=self.speckle_pos.shape[0])
@@ -89,7 +88,62 @@ class SpeckleImage:
         self.grid = zoom(self.grid, 2, order=2)
 
         return self.grid
+
+    def FFT(self, plot = True):
+        """
+        Performs a 2D FFT on the speckle pattern to find average speckle size and spacing.
+
+        """
+        row_fft = fftshift(fft(self.grid, axis = 0))
+        column_fft = fftshift(fft(self.grid, axis = 1))
         
+
+        #find power spectrum
+
+        power_spectrum_rows = np.abs(row_fft)**2
+        power_spectrum_columns = np.abs(column_fft)**2
+
+
+        peaks_x, _ = find_peaks(np.sum(power_spectrum_rows, axis=0))
+        peaks_y, _ = find_peaks(np.sum(power_spectrum_columns, axis=1))
+
+        peak_freq_x = peaks_x[np.argmax(np.sum(power_spectrum_rows, axis=0)[peaks_x])]
+        peak_freq_y = peaks_y[np.argmax(np.sum(power_spectrum_columns, axis=1)[peaks_y])]
+
+        avg_speckle_size_x = 1/ peak_freq_x
+        avg_speckle_size_y = 1/ peak_freq_y
+
+        #plot x and y projections of the fft to find the frequency with the highest magnitude in each direction
+        if plot == True:
+            fig,ax = plt.subplots(1,2, figsize=(10,5))
+            
+            ax[0].plot(np.sum(power_spectrum_rows, axis=0))
+            ax[0].set_xscale("log")
+            ax[0].set_yscale("log")
+            ax[0].set_xlabel("Frequency (1/pixels)")
+            ax[0].set_title("X projection of POWER SPECTRUM")
+            ax[0].axvline(peak_freq_x, color='r', linestyle='--', label='Peak Frequency')
+
+
+
+            ax[1].plot(np.sum(power_spectrum_columns, axis=1))
+            ax[1].set_xscale("log")
+            ax[1].set_yscale("log")
+            ax[1].set_xlabel("Frequency (1/pixels)")
+            ax[1].set_title("Y projection of POWER SPECTRUM")
+            ax[1].axvline(peak_freq_y, color='r', linestyle='--', label='Peak Frequency')
+
+            plt.show()
+        #the power spectrum records the intensity of the speckles in the frequency domain - this is related to the size and spacing of the speckles in the spatial domain
+
+        #fwhm of peak shown in figures plotted above is related to the average speckle size in the spatial domain - the larger the fwhm, the smaller the speckles in the spatial domain
+
+        print(avg_speckle_size_x)
+        print(avg_speckle_size_y)
+
+        return avg_speckle_size_x, avg_speckle_size_y
+
+
     def show_image(self):
 
         plt.imshow(self.grid, cmap="binary")
