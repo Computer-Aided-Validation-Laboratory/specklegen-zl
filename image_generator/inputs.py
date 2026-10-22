@@ -14,6 +14,7 @@ bw_balance = 0.5
 
 params = SpeckleImage(image_width, image_height, speckle_radius, bw_balance)
 
+#params.smooth_edges()
 
 params.calculate_speckle_position()
 
@@ -21,12 +22,10 @@ params.randomise_speckles()
 
 params.generate_speckle_pattern()
 
-#params.smooth_edges()
+params.smooth_edges()
 
-#params.FFT()
-
+params.FFT()
 
 params.show_image()
-
 
 #params.save_image("speckle_pattern.png")

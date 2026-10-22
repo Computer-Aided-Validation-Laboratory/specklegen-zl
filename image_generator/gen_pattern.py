@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.fft import fft, fft2, fftshift
-from scipy.ndimage import zoom
+from scipy.fft import fft, fft2, fftshift, fftfreq
+from scipy.ndimage import convolve
 from scipy.signal import find_peaks, peak_widths
 
 
@@ -14,7 +14,17 @@ class SpeckleImage:
 
         self.grid = np.full((self.height, self.width), 0)
 
-    def calculate_speckle_position(self):
+    """
+    def smooth_edges(self, scale = 2):
+
+        self.width *= scale
+        self.height *= scale 
+
+        self.speckle_radius *= scale
+
+        self.grid = np.full((self.height, self.width), 0)
+    """
+    def calculate_speckle_position(self, scale = 1):
         """
         Calculates the position of the centre of the speckles from the speckle radius and bw ratio.
 
@@ -38,20 +48,17 @@ class SpeckleImage:
 
         return self.speckle_pos, self.x_step, self.y_step
 
+
     def randomise_speckles(self):
         """
         Randomises the positions of the speckles.
         """
-        self.speckle_pos[:, 0] += np.random.uniform(
-            -self.x_step / 2, self.x_step / 2, size=self.speckle_pos.shape[0]
-        )
-        self.speckle_pos[:, 1] += np.random.uniform(
-            -self.y_step / 2, self.y_step / 2, size=self.speckle_pos.shape[0]
-        )
+        self.speckle_pos[:, 0] += np.random.uniform(-self.x_step / 2, self.x_step / 2, size=self.speckle_pos.shape[0])
+        self.speckle_pos[:, 1] += np.random.uniform(-self.y_step / 2, self.y_step / 2, size=self.speckle_pos.shape[0])
 
         return self.speckle_pos
 
-    def circle(self, centre_x: float, centre_y: float, x: float, y: float):
+    def circle(self, centre_x: float, centre_y: float, x: float, y: float, radius: int):
 
         return (x - centre_x) ** 2 + (y - centre_y) ** 2 <= self.speckle_radius**2
 
@@ -60,18 +67,8 @@ class SpeckleImage:
         Generates the speckle pattern by finding the pixels that should be coloured black - these satisfy the circle equation.
 
         """
-        
-        """
-        for x_centre,y_centre in centre_pixels:
-            for x in range(x_centre - int(self.x_step), x_centre + int(self.x_step)):
-                for y in range(y_centre - int(self.y_step), y_centre + int(self.y_step)):
-                            if 0 <= x < self.width and 0 <= y < self.height and self.circle(x_centre, y_centre, x, y):
-                                self.grid[y, x] = 1
-        """
         centre_pixels = np.floor(self.speckle_pos).astype(int)
         self.grid[centre_pixels[:, 0], centre_pixels[:, 1]] = 1
-        
-
 
         # want step size to be an integer
         rx = np.floor(self.x_step).astype(int)
@@ -81,7 +78,7 @@ class SpeckleImage:
         #later want to displace the mask essentially around the random centre coordinates
         dy, dx = np.ogrid[-ry:ry, -rx:rx]
 
-        circle_mask = self.circle(0, 0, dx, dy)
+        circle_mask = self.circle(0, 0, dx, dy, self.speckle_radius)
         
         for xc, yc in centre_pixels:
 
@@ -105,9 +102,6 @@ class SpeckleImage:
 
             region[circle_cropped] = 1
 
-        
-
-
 
         print(f"Total plotted pixels: {np.sum(self.grid)}")
 
@@ -116,69 +110,75 @@ class SpeckleImage:
         return self.grid
 
     def smooth_edges(self):
-        """
-        Smooths the edges of the speckles using interpolation.
 
-        """
-        self.grid = zoom(self.grid, 2, order=2)
+        kernel = np.ones((3, 3)) / 9
+
+        smoothed = convolve(self.grid.astype(float),kernel,mode="constant")
+
+        self.grid = smoothed
 
         return self.grid
-
+        
     def FFT(self, plot=True):
         """
         Performs a 2D FFT on the speckle pattern to find average speckle size and spacing.
 
         """
-        row_fft = fftshift(fft(self.grid, axis=0))
-        column_fft = fftshift(fft(self.grid, axis=1))
+        freq_x = fftshift(fftfreq(self.width))
 
-        # find power spectrum
+        freq_y = fftshift(fftfreq(self.height))
 
-        power_spectrum_rows = np.abs(row_fft) ** 2
-        power_spectrum_columns = np.abs(column_fft) ** 2
+        mask_x = freq_x > 0
 
-        peaks_x, _ = find_peaks(np.sum(power_spectrum_rows, axis=0))
-        peaks_y, _ = find_peaks(np.sum(power_spectrum_columns, axis=1))
+        mask_y = freq_y > 0
 
-        peak_freq_x = peaks_x[np.argmax(np.sum(power_spectrum_rows, axis=0)[peaks_x])]
-        peak_freq_y = peaks_y[
-            np.argmax(np.sum(power_spectrum_columns, axis=1)[peaks_y])
-        ]
+        freq_x_f = freq_x[mask_x]
+        freq_y_f = freq_y[mask_y]
 
-        avg_speckle_size_x = 1 / peak_freq_x
-        avg_speckle_size_y = 1 / peak_freq_y
 
+        Fx = fftshift(fft(self.grid,axis = 0))
+        Fy = fftshift(fft(self.grid,axis = 1))
+        #Fx = fftshift(fft(self.grid, axis = 0))
+        power_x = np.sum(np.abs(Fx)**2, axis = 1)[mask_x]
+
+        #Fy = fftshift(fft(self.grid, axis = 1))
+        power_y = np.sum(np.abs(Fy)**2, axis = 0)[mask_y]
+
+        xi = np.argmin(power_x)
+        yi = np.argmin(power_y)
+
+        peak_freq_x = freq_x_f[xi]
+        x_size = 1/ peak_freq_x 
+
+        peak_freq_y = freq_y_f[yi]
+        y_size = 1/ peak_freq_y
+
+        print(f"size of speckles in rows: {x_size}")
+        print(f"size of speckles in columns: {y_size}")
+
+        
         # plot x and y projections of the fft to find the frequency with the highest magnitude in each direction
         if plot == True:
             fig, ax = plt.subplots(1, 2, figsize=(10, 5))
 
-            ax[0].plot(np.sum(power_spectrum_rows, axis=0))
+            ax[0].plot(freq_x_f, power_x)
             ax[0].set_xscale("log")
             ax[0].set_yscale("log")
-            ax[0].set_xlabel("Frequency (1/pixels)")
-            ax[0].set_title("X projection of POWER SPECTRUM")
-            ax[0].axvline(
-                peak_freq_x, color="r", linestyle="--", label="Peak Frequency"
-            )
+            ax[0].set_xlabel("Frequency 1/pixels")
+            ax[0].set_title("X power spectrum")
+            ax[0].axvline(peak_freq_x, color="r", linestyle="--", label="Peak Frequency")
 
-            ax[1].plot(np.sum(power_spectrum_columns, axis=1))
+            ax[1].plot(freq_y_f, power_y)
             ax[1].set_xscale("log")
             ax[1].set_yscale("log")
-            ax[1].set_xlabel("Frequency (1/pixels)")
-            ax[1].set_title("Y projection of POWER SPECTRUM")
-            ax[1].axvline(
-                peak_freq_y, color="r", linestyle="--", label="Peak Frequency"
-            )
+            ax[1].set_xlabel("Frequency 1/pixels")
+            ax[1].set_title("Y power spectrum")
+            ax[1].axvline(peak_freq_y, color="r", linestyle="--", label="Peak Frequency")
 
             plt.show()
         # the power spectrum records the intensity of the speckles in the frequency domain - this is related to the size and spacing of the speckles in the spatial domain
 
         # fwhm of peak shown in figures plotted above is related to the average speckle size in the spatial domain - the larger the fwhm, the smaller the speckles in the spatial domain
-
-        print(avg_speckle_size_x)
-        print(avg_speckle_size_y)
-
-        return avg_speckle_size_x, avg_speckle_size_y
 
     def show_image(self):
 
