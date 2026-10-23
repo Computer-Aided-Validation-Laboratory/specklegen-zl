@@ -5,9 +5,9 @@ from pathlib import Path
 
 
 #Define image parameters 
-image_width = 500
+image_width = 1000
 
-image_height = 500
+image_height = 1000
 
 speckle_radius = 5 #pixels
 
