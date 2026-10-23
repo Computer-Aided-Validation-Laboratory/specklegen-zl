@@ -39,6 +39,9 @@ LICENSE
 README.md
 pyproject.toml
 example_images
+|---- speckle_pattern.png
+|---- FFT_analysis.png
+|
 src/
 |
 |----generator/
@@ -50,8 +53,13 @@ src/
        |----example_speckle_pattern.py
 ```
 # Examples
-An example of how to run the code and successfully make a speckle pattern can be found in ``example_speckle_pattern.py``. Thhe example speckle pattern is 500 x 500 pixels, the speckle radius is 5 pixels and the black/white balance is 0.5. The speckle pattern is not inverted, so it is black speckles on a white background. The speckle pattern generated is shown below, and is also found in example_images:
+An example of how to run the code and successfully make a speckle pattern can be found in ``example_speckle_pattern.py``. The example speckle pattern is 500 x 500 pixels, the speckle radius is 5 pixels and the black/white balance is 0.5. The speckle pattern is not inverted, so it is black speckles on a white background. The speckle pattern generated is shown below, and is also found in example_images:
 
+<img width="592" height="556" alt="image" src="https://github.com/user-attachments/assets/e4ff631c-eba8-4e18-b401-2f7d75ab752a" />
+
+The example code also demonstrates how to perform the Fourier analysis of the speckle pattern. The graphs produced are also found in example_images and below:
+
+<img width="2546" height="1589" alt="FFT_analysis" src="https://github.com/user-attachments/assets/60ce0abe-1506-40c8-aa59-f1760c57d598" />
 
 
 
