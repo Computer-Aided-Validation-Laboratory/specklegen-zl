@@ -2,4 +2,36 @@
 name = "speckle-gen"
 version = "0.1.0"
 requires-python = ">=3.13"
-dependencies = []
+authors = [
+  { name="Zuzanna-Leliwa", email="zuzanna.leliwa@ukaea.uk" },
+]
+description = "A random speckle generator"
+readme = "README.md"
+
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "scipy",
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+Homepage = "https://github.com/Computer-Aided-Validation-Laboratory/specklegen-zl"
+Issues = "https://github.com/Computer-Aided-Validation-Laboratory/specklegen-zl/issues"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

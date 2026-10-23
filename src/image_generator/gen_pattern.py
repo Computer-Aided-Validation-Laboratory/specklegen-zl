@@ -119,7 +119,7 @@ class SpeckleImage:
 
         return self.grid
         
-    def FFT(self, plot=True):
+    def FFT(self):
         """
         Performs a 2D FFT on the speckle pattern to find average speckle size and spacing.
 
@@ -134,7 +134,6 @@ class SpeckleImage:
 
         freq_x_f = freq_x[mask_x]
         freq_y_f = freq_y[mask_y]
-
 
         Fx = fftshift(fft(self.grid,axis = 0))
         Fy = fftshift(fft(self.grid,axis = 1))
@@ -153,32 +152,41 @@ class SpeckleImage:
         peak_freq_y = freq_y_f[yi]
         y_size = 1/ peak_freq_y
 
-        print(f"size of speckles in rows: {x_size}")
-        print(f"size of speckles in columns: {y_size}")
+        return freq_x_f, freq_y_f, power_x, power_y, x_size, y_size
 
+
+    def plot_FFT(self, save : bool = False, filename: str | None = None):
+
+        fig, ax = plt.subplots(1,2, figsize = (10,6))
+
+        freq_x_f, freq_y_f, power_x, power_y, x_size, y_size = self.FFT()
+
+        ax[0].plot(freq_x_f, power_x)
+        ax[0].set_xscale("log")
+        ax[0].set_yscale("log")
+        ax[0].set_xlabel("Frequency [pixels $^{-1}$}]")
+        ax[0].set_ylabel("Rows Power Spectrum")
+        ax[0].axvline(1 / x_size, color = "r", linestyle = "--", label = f" Average pixel size: {np.round(x_size,2)} pixels")
+        ax[0].legend()
+
+        ax[1].plot(freq_y_f, power_y)
+        ax[1].set_xscale("log")
+        ax[1].set_yscale("log")
+        ax[1].set_xlabel("Frequency 1/pixels")
+        ax[1].set_ylabel("Columns Power Spectrum")
+        ax[1].axvline(1/ y_size, color="r", linestyle="--", label = f"Avergae pixel size:  {np.round(y_size,2)} pixels")
+        ax[1].legend()
+
+        if save:
+            if filename is None:
+                filename = "FFT_plot.png"
         
-        # plot x and y projections of the fft to find the frequency with the highest magnitude in each direction
-        if plot == True:
-            fig, ax = plt.subplots(1, 2, figsize=(10, 5))
+            plt.savefig(filename, bbox_inches="tight")
 
-            ax[0].plot(freq_x_f, power_x)
-            ax[0].set_xscale("log")
-            ax[0].set_yscale("log")
-            ax[0].set_xlabel("Frequency 1/pixels")
-            ax[0].set_title("X power spectrum")
-            ax[0].axvline(peak_freq_x, color="r", linestyle="--", label="Peak Frequency")
 
-            ax[1].plot(freq_y_f, power_y)
-            ax[1].set_xscale("log")
-            ax[1].set_yscale("log")
-            ax[1].set_xlabel("Frequency 1/pixels")
-            ax[1].set_title("Y power spectrum")
-            ax[1].axvline(peak_freq_y, color="r", linestyle="--", label="Peak Frequency")
+        plt.show()
 
-            plt.show()
-        # the power spectrum records the intensity of the speckles in the frequency domain - this is related to the size and spacing of the speckles in the spatial domain
-
-        # fwhm of peak shown in figures plotted above is related to the average speckle size in the spatial domain - the larger the fwhm, the smaller the speckles in the spatial domain
+        plt.close()
 
     def show_image(self):
 
@@ -188,5 +196,9 @@ class SpeckleImage:
 
         plt.show()
 
-    def save_image(self, filename: str):
+    def save_image(self, filename: str | None = None):
+
+        if filename is None:
+            filename = "speckle_pattern.png"
+
         plt.imsave(filename, self.grid, cmap="binary")

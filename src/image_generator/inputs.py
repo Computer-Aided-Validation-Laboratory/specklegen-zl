@@ -26,6 +26,8 @@ params.smooth_edges()
 
 params.FFT()
 
+params.plot_FFT(save=True)
+
 params.show_image()
 
 #params.save_image("speckle_pattern.png")
