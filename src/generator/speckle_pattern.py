@@ -3,7 +3,7 @@ import numpy as np
 from scipy.fft import fft, fftfreq, fftshift
 from scipy.ndimage import convolve
 from pathlib import Path
-
+from PIL import Image
 
 class SpeckleImage:
     """
@@ -232,6 +232,6 @@ class SpeckleImage:
         if save_path is not None:
             save_path.parent.mkdir(parents = True, exist_ok = True)
             print(save_path.resolve())
-
+            Image.fromarray(out).save(save_path)
 
 
