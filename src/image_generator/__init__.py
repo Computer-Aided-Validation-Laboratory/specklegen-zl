@@ -1,1 +1,0 @@
-from .gen_pattern import SpeckleImage

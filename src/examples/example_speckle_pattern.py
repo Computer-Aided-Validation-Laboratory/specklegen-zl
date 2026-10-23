@@ -1,15 +1,8 @@
-import sys
-import os
-#from pathlib import Path
+from generator import SpeckleImage
+from generator import FourierAnalysis
+from pathlib import Path
 
 
-print("Working directory:", os.getcwd())
-print("Python executable:", sys.executable)
-print("Import paths:", sys.path)
-
-#sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
-from image_generator import SpeckleImage
 
 #Define image parameters 
 image_width = 500
@@ -30,11 +23,23 @@ pattern.calculate_speckle_position()
 pattern.randomise_speckles()
 
 #make speckle pattern
-pattern.generate_speckle_pattern()
+pattern.generate_speckle_pattern(inverted= False)
 
 #smooth the edges of the speckles 
 pattern.smooth_edges()
 
+#plotting speckle pattern
 pattern.show_image()
 
-#params.save_image("speckle_pattern.png")
+#save the speckle pattern to desired folder
+pattern.save_image(save_path= Path("example_images/speckle_pattern.png"))
+
+#FFT analysis
+
+fft = FourierAnalysis(pattern.grid)
+
+#perform fast fourier transform to find average speckle size
+fft.FFT()
+
+#plot and save fft graphs. 
+fft.plot_FFT( save_path=Path("example_images/FFT_analysis.png") )
