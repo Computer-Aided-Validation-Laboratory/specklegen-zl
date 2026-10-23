@@ -49,4 +49,9 @@ src/
 |----examples
        |----example_speckle_pattern.py
 ```
+# Examples
+An example of how to run the code and successfully make a speckle pattern can be found in ``example_speckle_pattern.py``. Thhe example speckle pattern is 500 x 500 pixels, the speckle radius is 5 pixels and the black/white balance is 0.5. The speckle pattern is not inverted, so it is black speckles on a white background. The speckle pattern generated is shown below, and is also found in example_images:
+
+
+
 
