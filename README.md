@@ -59,7 +59,7 @@ An example of how to run the code and successfully make a speckle pattern can be
 
 The example code also demonstrates how to perform the Fourier analysis of the speckle pattern. The graphs produced are also found in example_images and below:
 
-<img width="2546" height="1589" alt="FFT_analysis" src="https://github.com/user-attachments/assets/60ce0abe-1506-40c8-aa59-f1760c57d598" />
+<img width="2546" height="1589" alt="FFT_analysis" src="https://github.com/user-attachments/assets/43cd38a3-63c7-4dc4-93a4-1610271ecb9f" />
 
 
 
